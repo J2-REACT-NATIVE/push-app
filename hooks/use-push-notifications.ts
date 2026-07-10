@@ -1,6 +1,6 @@
 import Constants from "expo-constants";
 import * as Notifications from "expo-notifications";
-import { router, useRootNavigationState } from "expo-router";
+import { Href, router, useRootNavigationState } from "expo-router";
 import { useEffect, useState } from "react";
 import { Platform } from "react-native";
 
@@ -90,6 +90,7 @@ async function registerForPushNotificationsAsync() {
 
 export const usePushNotifications = () => {
   const [pendingChatId, setPendingChatId] = useState<string | null>("");
+  //nos puede indicar cuando la aplicacion ya esta montada y lista para ser usada
   const rootNavigationState = useRootNavigationState();
 
   const [expoPushToken, setExpoPushToken] = useState("");
@@ -112,7 +113,7 @@ export const usePushNotifications = () => {
         ]);
       },
     );
-
+    //! reacciona cuando se toca una notificacion
     const responseListener =
       Notifications.addNotificationResponseReceivedListener((response) => {
         console.log("addNotificationResponseReceivedListener:");
@@ -122,8 +123,9 @@ export const usePushNotifications = () => {
           setPendingChatId(chatId);
         }
       });
-
+    //! Implementar funcion cuando la app esta terminada.
     const handleInitialNotificationResponse = () => {
+        //tomamos la ultima notificacion recibida
       const response = Notifications.getLastNotificationResponse();
 
       const chatId = response?.notification?.request?.content?.data?.chatId;
@@ -131,7 +133,7 @@ export const usePushNotifications = () => {
         setPendingChatId(chatId);
       }
     };
-
+    //! Cuando se monte el componente que llame inmendiatamente al siguiente metodo.
     handleInitialNotificationResponse();
     //Implementar funcion cuando la app esta terminada.
     return () => {
@@ -144,7 +146,8 @@ export const usePushNotifications = () => {
     if (!rootNavigationState.key) return;
     if (!pendingChatId) return;
 
-    //router.push(`/chat/${pendingChatId}`);
+    // Push using a concrete path string to satisfy the router typings
+    router.push(`/chat/${pendingChatId}` as  Href) ;
     setPendingChatId(null);
   }, [pendingChatId, rootNavigationState?.key]);
 
