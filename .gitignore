@@ -42,3 +42,4 @@ app-example
 /ios
 /android
 push-firebase-config.json
+google-services.json

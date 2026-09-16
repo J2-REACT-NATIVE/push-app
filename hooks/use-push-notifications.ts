@@ -4,6 +4,10 @@ import { Href, router, useRootNavigationState } from "expo-router";
 import { useEffect, useState } from "react";
 import { Platform } from "react-native";
 
+
+
+// Esto es una configuracion que puede declararse de forma global
+//! se configura las notificaciones
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
@@ -20,6 +24,7 @@ interface SendPushOptions {
   data?: Record<string, any>;
 }
 
+//! se envia la notificcion push a los servidores de expo
 async function sendPushNotification(options: SendPushOptions) {
   const { to, title, body, data } = options;
 
@@ -42,6 +47,7 @@ async function sendPushNotification(options: SendPushOptions) {
   });
 }
 
+//! Si no se puede registar la notificacion Push
 function handleRegistrationError(errorMessage: string) {
   alert(errorMessage);
   throw new Error(errorMessage);
@@ -56,13 +62,16 @@ async function registerForPushNotificationsAsync() {
       lightColor: "#FF231F7C",
     });
   }
-
+  //!Vewrifica el permiso que tiene el usuario para recibir notificaciones
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
   if (existingStatus !== "granted") {
+    //Si el usuario no ha concedido el permiso se le vuelve a solicitar (vuelve a recibir elprompt)
     const { status } = await Notifications.requestPermissionsAsync();
     finalStatus = status;
   }
+
+  //! si no es otorgado el permiso se llamma a handleRegistrationError
   if (finalStatus !== "granted") {
     handleRegistrationError(
       "Permission not granted to get push token for push notification!",
@@ -81,6 +90,7 @@ async function registerForPushNotificationsAsync() {
         projectId,
       })
     ).data;
+    //!imprimimos
     console.log({ [Platform.OS]: pushTokenString });
     return pushTokenString;
   } catch (e: unknown) {
@@ -92,24 +102,27 @@ export const usePushNotifications = () => {
   const [pendingChatId, setPendingChatId] = useState<string | null>("");
   //nos puede indicar cuando la aplicacion ya esta montada y lista para ser usada
   const rootNavigationState = useRootNavigationState();
-
+  //! Obtiene token del dispositivo del usuario
   const [expoPushToken, setExpoPushToken] = useState("");
   const [notifications, setNotifications] = useState<
     Notifications.Notification[]
   >([]);
 
   useEffect(() => {
+    //!Registramos el token en expoPushToken
     registerForPushNotificationsAsync()
       .then((token) => setExpoPushToken(token ?? ""))
       .catch((error: any) => setExpoPushToken(`${error}`));
   }, []);
 
   useEffect(() => {
+    //! registramos los listeners
     const notificationListener = Notifications.addNotificationReceivedListener(
       (notification) => {
+        //notifications es un array del tipo Notifications.Notification[]
         setNotifications((prevNotifications) => [
-          notification,
-          ...prevNotifications,
+          notification, // nueva notificacion
+          ...prevNotifications, // las anteriores
         ]);
       },
     );
@@ -123,6 +136,7 @@ export const usePushNotifications = () => {
           setPendingChatId(chatId);
         }
       });
+      //TODO
     //! Implementar funcion cuando la app esta terminada.
     const handleInitialNotificationResponse = () => {
         //tomamos la ultima notificacion recibida

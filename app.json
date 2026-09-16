@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -19,7 +20,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.j2systems.app"
     },
     "web": {
       "output": "static",
@@ -48,7 +50,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "969f8d73-f705-446a-b2a3-6fab190b0d65"
+        "projectId": "3296212c-570c-4e08-be81-3ca3ff01ff30"
       }
     },
     "owner": "j2systems"
