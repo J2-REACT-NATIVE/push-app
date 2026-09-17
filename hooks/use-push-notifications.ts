@@ -102,6 +102,9 @@ export const usePushNotifications = () => {
   const [pendingChatId, setPendingChatId] = useState<string | null>("");
   //nos puede indicar cuando la aplicacion ya esta montada y lista para ser usada
   const rootNavigationState = useRootNavigationState();
+  //! Ultima notificacion tocada. Cubre tambien el arranque en frio (app terminada),
+  //! porque el hook usa useLayoutEffect y ademas escucha las respuestas posteriores.
+  const lastNotificationResponse = Notifications.useLastNotificationResponse();
   //! Obtiene token del dispositivo del usuario
   const [expoPushToken, setExpoPushToken] = useState("");
   const [notifications, setNotifications] = useState<
@@ -126,35 +129,21 @@ export const usePushNotifications = () => {
         ]);
       },
     );
-    //! reacciona cuando se toca una notificacion
-    const responseListener =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("addNotificationResponseReceivedListener:");
-        console.log(response);
-        const chatId = response.notification.request.content.data?.chatId;
-        if (typeof chatId === "string" && chatId.length > 0) {
-          setPendingChatId(chatId);
-        }
-      });
-      //TODO
-    //! Implementar funcion cuando la app esta terminada.
-    const handleInitialNotificationResponse = () => {
-        //tomamos la ultima notificacion recibida
-      const response = Notifications.getLastNotificationResponse();
-
-      const chatId = response?.notification?.request?.content?.data?.chatId;
-      if (typeof chatId === "string" && chatId.length > 0) {
-        setPendingChatId(chatId);
-      }
-    };
-    //! Cuando se monte el componente que llame inmendiatamente al siguiente metodo.
-    handleInitialNotificationResponse();
-    //Implementar funcion cuando la app esta terminada.
     return () => {
       notificationListener.remove();
-      responseListener.remove();
     };
   }, []);
+
+  //! reacciona cuando se toca una notificacion, en segundo plano y en arranque en frio
+  useEffect(() => {
+    if (!lastNotificationResponse) return;
+
+    const chatId =
+      lastNotificationResponse.notification.request.content.data?.chatId;
+    if (typeof chatId === "string" && chatId.length > 0) {
+      setPendingChatId(chatId);
+    }
+  }, [lastNotificationResponse]);
 
   useEffect(() => {
     if (!rootNavigationState.key) return;
